@@ -1,5 +1,4 @@
-<?php
-require __DIR__ . '/../src/System/Bootstrap.php';
+<?php require __DIR__ . '/../src/System/Bootstrap.php';
 /* ----------------------------------------------------------------------------
  * MAIN ENTRY POINT / FRONT CONTROLLER
  * ----------------------------------------------------------------------------
@@ -11,5 +10,4 @@ require __DIR__ . '/../src/System/Bootstrap.php';
  * could add at your discretion are framework-wide constants that you can
  * later call them within the entire applications codebase
  * ----------------------------------------------------------------------------
- */
-Bootstrap::run();
+ */ Bootstrap::run();
