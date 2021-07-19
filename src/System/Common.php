@@ -55,7 +55,7 @@ if ( ! function_exists('logger') ) {
      * utilize
      *
      * Example Usage:
-     * logger('Application event has been logged!', 'info')
+     * logger('Application event has been logged!', 'info', 'event')
      *
      * @see Services::logger()
      *
