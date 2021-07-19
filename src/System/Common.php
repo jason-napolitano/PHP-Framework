@@ -30,10 +30,14 @@ use Core\Services\FileSystem\FileHandlerInterface;
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('service') ) {
     /**
-     * Loads a service method from within the service container
+     * Loads a service method from within the service container. For example, if
+     * you'd like to call the session service, you could do the following:
      *
-     * @param string $name    Name of the method located in \App\Config\Services
-     *                        or \Core\Services\Container
+     * $session = service('session')
+     * $session->set('my-amazing-key', 'my-amazing-value')
+     * dump($session->get('my-amazing-key')) // Returns `my-amazing-value`
+     *
+     * @param string $name    Name of the service method
      *
      * @return mixed
      */
