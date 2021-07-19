@@ -3,7 +3,7 @@
 > that uses an MVC architecture and services to help delegate relatively proper application 
 > flow. Included is a PSR-3 logger, a REST'ful router, a bunch of services and procedural 
 > functions to access the core framework and easily interchangeable service components and
-> a plethora of exception classes that extend PHP's native \Exception SPL's [[view package](https://github.com/jason-napolitano/PHP-Exceptions)].
+> a plethora of exception classes that extend PHP's native `\Exception` SPL's [[view package](https://github.com/jason-napolitano/PHP-Exceptions)].
 
 ## WIKI
  - COMING SOON -
