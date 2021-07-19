@@ -2,6 +2,8 @@
 
 namespace Core\System {
 
+    use App\Config\HTTP;
+
     /**
      * NotFoundController class
      *
@@ -11,9 +13,11 @@ namespace Core\System {
     {
         public static function notFound(): void
         {
+            $code = HTTP::$codes;
+
             self::setStatusCode(HTTP_NOT_FOUND);
-            respond([
-                'message' => 'Route not found',
+            self::response([
+                'message' => $code[HTTP_NOT_FOUND],
             ]);
         }
     }

@@ -104,6 +104,7 @@ const HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
 const HTTP_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
 const HTTP_EXPECTATION_FAILED = 417;
 const HTTP_I_AM_A_TEAPOT = 418;                                             // RFC2324
+const HTTP_MISDIRECTED_REQUEST = 421;                                       // RFC2324
 const HTTP_UNPROCESSABLE_ENTITY = 422;                                      // RFC4918
 const HTTP_LOCKED = 423;                                                    // RFC4918
 const HTTP_FAILED_DEPENDENCY = 424;                                         // RFC4918
@@ -112,6 +113,8 @@ const HTTP_UPGRADE_REQUIRED = 426;                                          // R
 const HTTP_PRECONDITION_REQUIRED = 428;                                     // RFC6585
 const HTTP_TOO_MANY_REQUESTS = 429;                                         // RFC6585
 const HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;                           // RFC6585
+const HTTP_UNAVAILABLE_FOR_LEGAL_REASONS = 451;                             // RFC6585
+const HTTP_CLIENT_CLOSED_REQUEST = 499;                             // RFC6585
 
 // ----------------------------------------------------------------------------
 // The server encountered an unexpected error
@@ -131,3 +134,4 @@ const HTTP_INSUFFICIENT_STORAGE = 507;                 // RFC4918
 const HTTP_LOOP_DETECTED = 508;                        // RFC5842
 const HTTP_NOT_EXTENDED = 510;                         // RFC2774
 const HTTP_NETWORK_AUTHENTICATION_REQUIRED = 511;
+const HTTP_NETWORK_CONNECTION_TIMEOUT = 599;

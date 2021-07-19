@@ -33,7 +33,8 @@ namespace App\Config {
             $this->router->get('/', 'DemoController@index');
 
             // With params
-            $this->router->get('/(\\w+)', 'DemoController@home');
+            $this->router->get('/(\\w+)', 'DemoController@oneArgument');
+            $this->router->get('/(\\w+)/(\\w+)', 'DemoController@twoArguments');
         }
 
         // --------------------------------------------------------------------
