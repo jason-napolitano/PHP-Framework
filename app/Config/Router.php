@@ -27,6 +27,24 @@ namespace App\Config {
          */
         public BaseRouter $router;
 
+        /**
+         * Route the application
+         *
+         * @return void
+         */
+        public function generate(): void
+        {
+            // Default 404 handler ...
+            $this->router->set404(fn() => \Core\System\ErrorController::notFound());
+
+            // Without params
+            $this->router->get('/', 'DemoController@index');
+
+            // With params
+            $this->router->get('/(\\w+)', 'DemoController@oneArgument');
+            $this->router->get('/(\\w+)/(\\w+)', 'DemoController@twoArguments');
+        }
+
         // --------------------------------------------------------------------
         // SYSTEM ROUTER CONFIG - DO NOT MODIFY
 
@@ -46,24 +64,6 @@ namespace App\Config {
 
             // Let's get things going!
             $this->router->run();
-        }
-
-        /**
-         * Route the application
-         *
-         * @return void
-         */
-        public function generate(): void
-        {
-            // Default 404 handler ...
-            $this->router->set404(fn() => \Core\System\ErrorController::notFound());
-
-            // Without params
-            $this->router->get('/', 'DemoController@index');
-
-            // With params
-            $this->router->get('/(\\w+)', 'DemoController@oneArgument');
-            $this->router->get('/(\\w+)/(\\w+)', 'DemoController@twoArguments');
         }
     }
 }
