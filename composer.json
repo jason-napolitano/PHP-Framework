@@ -1,0 +1,16 @@
+{
+  "name": "jason-napolitano/ffime",
+  "description": "Make life easy when working with 7.4's FFI",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.4",
+    "ghostff/dump7": "v2.0.2",
+    "ircmaxell/php-c-parser": "dev-master",
+    "ircmaxell/php-elf-symbolresolver": "^1.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "phpunit/dbunit": "^4.0.0",
+    "phpunit/phpunit": "^9.5.7"
+  }
+}
