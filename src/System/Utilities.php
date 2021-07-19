@@ -18,8 +18,8 @@ namespace Core\System {
         /**
          * Load a method or property from a class
          *
-         * @param string $class The class to search in
-         * @param string $value The value to search for
+         * @param string|object $class The class to search in
+         * @param string        $value The value to search for
          *
          * @return mixed        The value of $value from $class
          *

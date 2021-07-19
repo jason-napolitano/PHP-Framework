@@ -65,12 +65,12 @@ namespace Core\Services\HTTP {
          *
          * @param string|int $key     The key portion of $header (EG: Content-Type)
          * @param string|int $value   The value of $key (EG: 'application/json')
-         * @param int|null   $code    The optional status code [Default: 200]
+         * @param int        $code    The optional status code [Default: 200]
          * @param bool       $replace Should the header replace a previous similar header
          *
          * @return void
          */
-        final public static function setHeader(mixed $key, string|int $value, int $code = null, bool $replace = false): void
+        final public static function setHeader(mixed $key, string|int $value, int $code = HTTP_OK, bool $replace = false): void
         {
             header("{$key}: {$value}", $replace, $code);
         }
