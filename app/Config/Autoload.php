@@ -46,7 +46,7 @@ namespace App\Config {
          *
          * @var array $classmap
          */
-        protected static array $classmap = [
+        public static array $classmap = [
             // ...
         ];
     }
