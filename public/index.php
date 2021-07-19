@@ -11,7 +11,3 @@
  * later call them within the entire applications codebase
  * ----------------------------------------------------------------------------
  */ Bootstrap::run();
-
- $ar = [1,2,3,4,5];
-
- new Dump($ar);
