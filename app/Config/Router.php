@@ -55,9 +55,8 @@ namespace App\Config {
          */
         public function generate(): void
         {
-
             // Default 404 handler ...
-            $this->router->set404(fn () => \Core\System\ErrorController::notFound());
+            $this->router->set404(fn() => \Core\System\ErrorController::notFound());
 
             // Without params
             $this->router->get('/', 'DemoController@index');
