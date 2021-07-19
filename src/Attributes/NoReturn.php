@@ -1,16 +1,37 @@
 <?php
+
 namespace Attributes {
 
     use Attribute as BaseAttribute;
 
     /**
-     * Deprecated class
+     * ----------------------------------------------------------------------------
+     * NoReturn Attribute Attribute Class
+     * ----------------------------------------------------------------------------
      *
-     * @package Attributes
+     * @link     https://wiki.php.net/rfc/attributes
+     *
+     * @package  Attributes
+     * @requires PHP >= v.8.0.0
      */
-    #[BaseAttribute]
-    class NoReturn extends Attribute
+    #[BaseAttribute(
+        BaseAttribute::TARGET_FUNCTION |
+        BaseAttribute::TARGET_METHOD)
+    ]
+    class NoReturn
     {
-        // ...
+        /**
+         */
+        public const ANY_ARGUMENT = 1;
+
+        /**
+         * NoReturn constructor
+         *
+         * @param ...$arguments
+         */
+        public function __construct(...$arguments)
+        {
+            // ...
+        }
     }
 }

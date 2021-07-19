@@ -3,6 +3,7 @@
 namespace Core\Services\HTTP {
 
     use App\Config\ContentTypes;
+    use Attributes\NoReturn;
 
     /**
      * ----------------------------------------------------------------------------
@@ -72,7 +73,7 @@ namespace Core\Services\HTTP {
          */
         final public static function setHeader(mixed $key, string|int $value, int $code = HTTP_OK, bool $replace = false): void
         {
-            header("{$key}: {$value}", $replace, $code);
+            header("$key: $value", $replace, $code);
         }
 
         // ------------------------------------------------------------------------
@@ -82,7 +83,7 @@ namespace Core\Services\HTTP {
          *
          * @param string $to
          */
-        public static function redirect(string $to): void
+        #[NoReturn] public static function redirect(string $to): void
         {
             self::setHeader('Location', $to);
             exit;
