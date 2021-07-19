@@ -29,5 +29,25 @@ namespace App\Config {
         public static array $psr4 = [
             'ThirdParty' => APPPATH . 'ThirdParty',
         ];
+
+        /**
+         * All classmaps are in key => value pairs where the key is the
+         * class name and the value is the path to the file containing
+         * that class
+         *
+         * EXAMPLE:
+         * public static array $classmap = [
+         *     // With .php extension
+         *     'ClassName" => __DIR__ . '/path/to/ClassName.php'
+         *
+         *     // Without .php extension
+         *     'ClassName" => __DIR__ . '/path/to/ClassName'
+         * ]
+         *
+         * @var array $classmap
+         */
+        protected static array $classmap = [
+            // ...
+        ];
     }
 }
