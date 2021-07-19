@@ -28,6 +28,23 @@ use Core\Services\FileSystem\FileHandlerInterface;
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
+if ( ! function_exists('service') ) {
+    /**
+     * Loads a service method from within the service container
+     *
+     * @param string $name    Name of the method located in \App\Config\Services
+     *                        or \Core\Services\Container
+     *
+     * @return mixed
+     */
+    function service(string $name): mixed
+    {
+        return Services::call($name);
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
 if ( ! function_exists('logger') ) {
     /**
      * Logger library function
@@ -282,42 +299,6 @@ if ( ! function_exists('utils') ) {
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
-if ( ! function_exists('service') ) {
-    /**
-     * Loads a service method from within the service container
-     *
-     * @param string $name    Name of the method located in \App\Config\Services
-     *                        or \Core\Services\Container
-     *
-     * @return mixed
-     */
-    function service(string $name): mixed
-    {
-        return Services::call($name);
-    }
-}
-
-// ----------------------------------------------------------------------------
-// If the function doesn't exist, let's create it!
-if ( ! function_exists('checkenv') ) {
-    /**
-     * Does $environment exist in the env file or as a defined constant?
-     *
-     * @param string $environment
-     *
-     * @return bool
-     */
-    function checkenv(string $environment): bool
-    {
-        return
-            constant('ENVIRONMENT') === $environment ||
-            getenv('ENVIRONMENT') === $environment ||
-            defined('ENVIRONMENT');
-    }
-}
-
-// ----------------------------------------------------------------------------
-// If the function doesn't exist, let's create it!
 if ( ! function_exists('parser') ) {
     /**
      * A parser instance to parse JSON and XML data
@@ -401,35 +382,20 @@ if ( ! function_exists('env') ) {
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
-if ( ! function_exists('namespace_exists')) {
+if ( ! function_exists('checkenv') ) {
     /**
-     * Does a namespace exist?
+     * Does $environment exist in the env file or as a defined constant?
      *
-     * @param string $classname
-     * @param string $namespace
+     * @param string $environment
      *
      * @return bool
      */
-    function namespace_exists(string $namespace, string $classname): bool
+    function checkenv(string $environment): bool
     {
-        return get_namespace($classname) === $namespace;
-    }
-}
-
-// ----------------------------------------------------------------------------
-// If the function doesn't exist, let's create it!
-if ( ! function_exists('get_namespace')) {
-    /**
-     * Return a classes namespace name?
-     *
-     * @param string $classname
-     *
-     * @return string
-     */
-    function get_namespace(string $classname): string
-    {
-        $namespace = (new ReflectionClass($classname))->getNamespaceName();
-        return rtrim($namespace, strip_namespace($classname));
+        return
+            constant('ENVIRONMENT') === $environment ||
+            getenv('ENVIRONMENT') === $environment ||
+            defined('ENVIRONMENT');
     }
 }
 
@@ -448,6 +414,40 @@ if ( ! function_exists('strip_namespace') ) {
     function strip_namespace(string $classname): string
     {
         return (new ReflectionClass($classname))->getShortName();
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if ( ! function_exists('get_namespace')) {
+    /**
+     * Returns only a classes namespace name
+     *
+     * @param string $classname
+     *
+     * @return string
+     */
+    function get_namespace(string $classname): string
+    {
+        $namespace = (new ReflectionClass($classname))->getNamespaceName();
+        return rtrim($namespace, strip_namespace($classname));
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if ( ! function_exists('namespace_exists')) {
+    /**
+     * Does a namespace exist?
+     *
+     * @param string $classname
+     * @param string $namespace
+     *
+     * @return bool
+     */
+    function namespace_exists(string $namespace, string $classname): bool
+    {
+        return get_namespace($classname) === $namespace;
     }
 }
 

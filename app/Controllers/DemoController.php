@@ -14,7 +14,7 @@ namespace App\Controllers {
     {
         /**
          * A basic example of routing to a controller method without any arguments
-         * being passed into then router
+         * being passed into the router
          */
         public static function index(): void
         {

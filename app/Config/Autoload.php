@@ -5,7 +5,7 @@ namespace App\Config {
     /**
      * ----------------------------------------------------------------------------
      * The Autoload Library is a PSR-4 compatible utility class that assists in
-     * loading of package classmaps and namespaces
+     * loading of package classmaps and namespaces.
      * ----------------------------------------------------------------------------
      *
      * @author  Jason Napolitano

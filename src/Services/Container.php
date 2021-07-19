@@ -17,8 +17,8 @@ namespace Core\Services {
     use Core\Services\Parser\ParserInterface;
     use Core\Services\Utilities\ScriptManager;
     use Core\Services\Session\SessionInterface;
-    use Core\Services\FileSystem\FileHandlerInterface;
     use Core\Services\Libraries\ShoppingCartInterface;
+    use Core\Services\FileSystem\FileHandlerInterface;
 
     /**
      * ------------------------------------------------------------------------
