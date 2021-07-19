@@ -35,9 +35,9 @@ if ( ! function_exists('service') ) {
      *
      * $session = service('session')
      * $session->set('my-amazing-key', 'my-amazing-value')
-     * dump($session->get('my-amazing-key')) // Returns `my-amazing-value`
+     * dump( $session->get('my-amazing-key') ) // Returns `my-amazing-value`
      *
-     * @param string $name    Name of the service method
+     * @param string $name Name of the service method
      *
      * @return mixed
      */
@@ -51,13 +51,14 @@ if ( ! function_exists('service') ) {
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('logger') ) {
     /**
-     * Logger library function
+     * Calls the logger service, making application logging extremely simple to
+     * utilize
      *
      * @see Services::logger()
      *
-     * @param string $message
-     * @param string $type
-     * @param string $channel
+     * @param  string $message
+     * @param ?string $type Options: [info|warning|debug|notice|error]
+     * @param ?string $channel
      *
      * @return void
      */
@@ -103,7 +104,12 @@ if ( ! function_exists('jwt') ) {
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('session') ) {
     /**
-     * Session library function
+     * Calls the session service, allowing for easy session data manipulation
+     * throughout the application
+     *
+     * Example:
+     * session()->set('my-amazing-key', 'my-amazing-value')
+     * dump( session()->get('my-amazing-key') ) // Returns `my-amazing-value`
      *
      * @see Services::session()
      *
@@ -121,7 +127,7 @@ if ( ! function_exists('session') ) {
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('dump') ) {
     /**
-     * Var dump
+     * Calls the dump service for a prettier way to var_dump() and/or print_r()
      *
      * @see Services::dump()
      *
@@ -139,7 +145,7 @@ if ( ! function_exists('dump') ) {
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('dd') ) {
     /**
-     * Var dump
+     * Calls the dump service for a prettier way to var_dump() and/or print_r()
      *
      * @see Services::dd()
      *
@@ -430,6 +436,8 @@ if ( ! function_exists('get_namespace')) {
      * @param string $classname
      *
      * @return string
+     *
+     * @throws ReflectionException
      */
     function get_namespace(string $classname): string
     {
@@ -448,6 +456,8 @@ if ( ! function_exists('namespace_exists')) {
      * @param string $namespace
      *
      * @return bool
+     *
+     * @throws ReflectionException
      */
     function namespace_exists(string $namespace, string $classname): bool
     {
@@ -550,7 +560,7 @@ if ( ! function_exists('reduce_multiples') ) {
      *
      * Reduces multiple instances of a particular character.  Example:
      *
-     * Fred, Bill,, Joe, Jimmy
+     * Fred,, Bill,, Joe, Jimmy
      *
      * becomes:
      *
