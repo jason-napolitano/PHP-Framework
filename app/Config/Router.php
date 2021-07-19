@@ -3,7 +3,6 @@
 namespace App\Config {
 
     // IMPORTS ----------------------------------------------------------------
-    use Core\System\ErrorController;
     use Core\Services\Router\Router as BaseRouter;
 
     /**
@@ -27,8 +26,14 @@ namespace App\Config {
          *
          * @return void
          */
-        public function init(): void
+        public function generate(): void
         {
+
+            // Default 404 handler ...
+            $this->router->set404(static function () {
+                \Core\System\ErrorController::notFound();
+            });
+
             // Without params
             $this->router->get('/', 'DemoController@index');
 
@@ -38,6 +43,7 @@ namespace App\Config {
         }
 
         // --------------------------------------------------------------------
+        // SYSTEM ROUTER CONFIG - DO NOT MODIFY
 
         /**
          * Router instance
@@ -46,29 +52,21 @@ namespace App\Config {
          */
         public BaseRouter $router;
 
-        // --------------------------------------------------------------------
-        // SYSTEM ROUTER CONFIG
-
         /**
-         * Let's supply some routes and kick some ass!
+         * Let's build this router and route the application
          */
         public function __construct()
         {
-            // Route it ...
+            // Route the application ...
             $this->router = new BaseRouter();
 
-            // Default namespace
+            // Set the default namespace ...
             $this->router->setNamespace(static::$defaultNamespace);
 
-            // Default 404 handler
-            $this->router->set404(static function () {
-                ErrorController::notFound();
-            });
+            // Generate the routes ...
+            $this->generate();
 
-            // initialize it ...
-            $this->init();
-
-            // And, run it!
+            // Let's get things going!
             $this->router->run();
         }
     }
