@@ -17,6 +17,7 @@
  */
 
 // IMPORTS --------------------------------------------------------------------
+use App\Config\App;
 use App\Config\Services;
 use Core\System\Utilities;
 use Core\Services\API\JWTInterface;
@@ -25,6 +26,38 @@ use Core\Services\Parser\ParserInterface;
 use Core\Services\Session\SessionInterface;
 use Core\Services\Libraries\ShoppingCartInterface;
 use Core\Services\FileSystem\FileHandlerInterface;
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if ( ! function_exists('base_url') ) {
+    /**
+     * base_url function
+     *
+     * @param string $uri
+     *
+     * @return string
+     */
+    function base_url(string $uri = ''): string
+    {;
+        return App::$baseUrl === '' ? getenv('BASE_URL') . "/$uri" : App::$baseUrl . "/$uri";
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if ( ! function_exists('get_ip') ) {
+    /**
+     * base_url function
+     *
+     * @return string
+     */
+    function get_ip(): string
+    {
+        $hostname = gethostname();
+        return gethostbyname($hostname);
+    }
+}
+
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
