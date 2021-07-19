@@ -114,7 +114,7 @@ const HTTP_PRECONDITION_REQUIRED = 428;                                     // R
 const HTTP_TOO_MANY_REQUESTS = 429;                                         // RFC6585
 const HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;                           // RFC6585
 const HTTP_UNAVAILABLE_FOR_LEGAL_REASONS = 451;                             // RFC6585
-const HTTP_CLIENT_CLOSED_REQUEST = 499;                             // RFC6585
+const HTTP_CLIENT_CLOSED_REQUEST = 499;                                     // RFC6585
 
 // ----------------------------------------------------------------------------
 // The server encountered an unexpected error

@@ -49,27 +49,20 @@ namespace Core\Services\FFI {
         public const FUNCTIONS_TO_REMOVE = [
 
         ];
-
-        private string $sofile;
-
-        private array $code = [];
-
-        private array $ast = [];
-        private array $numericDefines = [];
-
-        private Compiler $compiler;
-        private Context $context;
-        private CParser $cparser;
-
-        private array $symbols;
-
-        private \FFI $ffi;
-        private bool $built = false;
-
         public const DEFAULT_SO_SEARCH_PATHS = [
             '/usr/local/lib',
             '/usr/lib',
         ];
+        private string $sofile;
+        private array $code = [];
+        private array $ast = [];
+        private array $numericDefines = [];
+        private Compiler $compiler;
+        private Context $context;
+        private CParser $cparser;
+        private array $symbols;
+        private \FFI $ffi;
+        private bool $built = false;
 
         public function __construct(string $sharedObjectFile, array $headerSearchPaths = [], array $soSearchPaths = self::DEFAULT_SO_SEARCH_PATHS)
         {
@@ -79,6 +72,21 @@ namespace Core\Services\FFI {
             $this->compiler = new Compiler;
             $this->symbols = array_flip((new ElfParser)->parse($this->sofile)->getAllSymbols());
 
+        }
+
+        private function findSOFile(string $filename, array $searchPaths): string
+        {
+            if ( is_file($filename) ) {
+                // no searching needed
+                return $filename;
+            }
+            foreach ( $searchPaths as $path ) {
+                $test = $path . '/' . $filename;
+                if ( file_exists($test) ) {
+                    return $test;
+                }
+            }
+            throw new \LogicException('Could not find shared object file ' . $filename);
         }
 
         public function defineInt(string $identifier, int $value): void
@@ -103,79 +111,6 @@ namespace Core\Services\FFI {
             }
             $this->ast = array_merge($this->ast, $this->filterDeclarations($this->cparser->parse($header, $this->context)->declarations));
             return $this;
-        }
-
-        public function getCode(): string
-        {
-            return $this->code;
-        }
-
-        public function codeGen(string $className, string $filename): void
-        {
-            $this->filterSymbolDeclarations();
-            $this->compile($className);
-            file_put_contents($filename, '<?php ' . $this->code[$className]);
-        }
-
-        public function build(?string $className = null)
-        {
-            $className = $className ?? $this->getDynamicClassName();
-            $this->filterSymbolDeclarations();
-            $this->compile($className);
-            eval($this->code[$className]);
-            return new $className;
-        }
-
-        public function getDynamicClassName(): string
-        {
-            $class = 'ffime\ffime_';
-            do {
-                $class .= mt_rand(0, 99);
-            } while ( class_exists($class) );
-            return $class;
-        }
-
-        public function compile($className): void
-        {
-            if ( isset($this->code[$className]) ) {
-                return;
-            }
-            $this->numericDefines = $this->context->getNumericDefines();
-            $this->code[$className] = $this->compiler->compile($this->sofile, $this->ast, $this->numericDefines, $className);
-        }
-
-        private function findSOFile(string $filename, array $searchPaths): string
-        {
-            if ( is_file($filename) ) {
-                // no searching needed
-                return $filename;
-            }
-            foreach ( $searchPaths as $path ) {
-                $test = $path . '/' . $filename;
-                if ( file_exists($test) ) {
-                    return $test;
-                }
-            }
-            throw new \LogicException('Could not find shared object file ' . $filename);
-        }
-
-        protected function filterSymbolDeclarations(): void
-        {
-            $result = [];
-            foreach ( $this->ast as $declaration ) {
-                if ( $declaration instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\FunctionDecl ) {
-                    if ( isset($this->symbols[$declaration->name]) ) {
-                        $result[] = $declaration;
-                    }
-                } else if ( $declaration instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\VarDecl ) {
-                    if ( isset($this->symbols[$declaration->name]) ) {
-                        $result[] = $declaration;
-                    }
-                } else {
-                    $result[] = $declaration;
-                }
-            }
-            $this->ast = $result;
         }
 
         protected function filterDeclarations(array $declarations): array
@@ -209,6 +144,64 @@ namespace Core\Services\FFI {
                 }
             }
             return $result;
+        }
+
+        public function getCode(): string
+        {
+            return $this->code;
+        }
+
+        public function codeGen(string $className, string $filename): void
+        {
+            $this->filterSymbolDeclarations();
+            $this->compile($className);
+            file_put_contents($filename, '<?php ' . $this->code[$className]);
+        }
+
+        protected function filterSymbolDeclarations(): void
+        {
+            $result = [];
+            foreach ( $this->ast as $declaration ) {
+                if ( $declaration instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\FunctionDecl ) {
+                    if ( isset($this->symbols[$declaration->name]) ) {
+                        $result[] = $declaration;
+                    }
+                } else if ( $declaration instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\VarDecl ) {
+                    if ( isset($this->symbols[$declaration->name]) ) {
+                        $result[] = $declaration;
+                    }
+                } else {
+                    $result[] = $declaration;
+                }
+            }
+            $this->ast = $result;
+        }
+
+        public function compile($className): void
+        {
+            if ( isset($this->code[$className]) ) {
+                return;
+            }
+            $this->numericDefines = $this->context->getNumericDefines();
+            $this->code[$className] = $this->compiler->compile($this->sofile, $this->ast, $this->numericDefines, $className);
+        }
+
+        public function build(?string $className = null)
+        {
+            $className = $className ?? $this->getDynamicClassName();
+            $this->filterSymbolDeclarations();
+            $this->compile($className);
+            eval($this->code[$className]);
+            return new $className;
+        }
+
+        public function getDynamicClassName(): string
+        {
+            $class = 'ffime\ffime_';
+            do {
+                $class .= mt_rand(0, 99);
+            } while ( class_exists($class) );
+            return $class;
         }
     }
 }

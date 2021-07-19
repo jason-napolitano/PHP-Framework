@@ -444,7 +444,7 @@ namespace Core\Services\Router {
             if ( $this->notFoundCallback ) {
                 $this->invoke($this->notFoundCallback);
             } else {
-                self::setHeader($_SERVER['SERVER_PROTOCOL'],'404 Not Found');
+                self::setHeader($_SERVER['SERVER_PROTOCOL'], '404 Not Found');
             }
         }
 

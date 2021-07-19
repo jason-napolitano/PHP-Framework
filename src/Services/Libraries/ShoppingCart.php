@@ -70,7 +70,7 @@ namespace Core\Services\Libraries {
                 $this->cartContents = ['cart_total' => 0, 'total_items' => 0];
             }
 
-            logger('ShoppingCart Utility Service Initialized');
+            logger('ShoppingCart utility service was successfully initialized', channel: 'services');
         }
 
         // --------------------------------------------------------------------

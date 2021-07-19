@@ -10,6 +10,43 @@ namespace Core\Services\FFI {
     class Compiler
     {
 
+        private const INT_TYPES = [
+            'bool',
+            'char',
+            'int',
+            'long',
+            'long long',
+            'long int',
+            'long long int',
+            'int8_t',
+            'uint8_t',
+            'int16_t',
+            'uint16_t',
+            'int32_t',
+            'uint32_t',
+            'int64_t',
+            'uint64_t',
+            'unsigned',
+            'unsigned char',
+            'unsigned int',
+            'unsigned long',
+            'unsigned long int',
+            'unsigned long long',
+            'unsigned long long int',
+            'size_t',
+        ];
+        private const FLOAT_TYPES = [
+            'float',
+            'double',
+            'long double',
+        ];
+        private const NATIVE_TYPES = [
+            'int',
+            'float',
+            'bool',
+            'string',
+            'array',
+        ];
         private array $defines;
         private array $resolver;
 
@@ -68,20 +105,60 @@ namespace Core\Services\FFI {
             return implode("\n", $class);
         }
 
-        public function compileCases(array $decls): array
+        protected function buildResolver(array $decls): array
         {
-            $results = [];
+            $toLookup = [];
+            $result = [];
             foreach ( $decls as $decl ) {
-                if ( $decl instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\VarDecl ) {
-                    $return = $this->compileType($decl->type);
-                    if ( in_array($return, self::NATIVE_TYPES) ) {
-                        $results[] = "case " . var_export($decl->name, true) . ": return \$this->ffi->{$decl->name};";
-                    } else {
-                        $results[] = "case " . var_export($decl->name, true) . ": \$tmp = \$this->ffi->{$decl->name}; return \$tmp === null ? null : new $return(\$tmp);";
+                if ( $decl instanceof Decl\NamedDecl\TypeDecl\TypedefNameDecl\TypedefDecl ) {
+                    if ( $decl->type instanceof Type\TypedefType ) {
+                        $toLookup[] = [$decl->name, $decl->type->name];
+                    } else if ( $decl->type instanceof Type\BuiltinType ) {
+                        $result[$decl->name] = $decl->type->name;
+                    } else if ( $decl->type instanceof Type\TagType\EnumType ) {
+                        $result[$decl->name] = 'int';
                     }
                 }
             }
-            return $results;
+            /**
+             * This resolves chained typedefs. For example:
+             * typedef int A;
+             * typedef A B;
+             * typedef B C;
+             *
+             * This will resolve C=>int, B=>int, A=>int
+             *
+             * It runs a maximum of 50 times (to prevent things that shouldn't be possible, like circular references)
+             */
+            $runs = 50;
+            while ( $runs-- > 0 && ! empty($toLookup) ) {
+                $toRemove = [];
+                for ( $i = 0, $n = count($toLookup); $i < $n; $i++ ) {
+                    [$name, $ref] = $toLookup[$i];
+
+                    if ( isset($result[$ref]) ) {
+                        $result[$name] = $result[$ref];
+                        $toRemove[] = $i;
+                    }
+                }
+                foreach ( $toRemove as $index ) {
+                    unset($toLookup[$index]);
+                }
+                if ( empty($toRemove) ) {
+                    // We removed nothing, so don't bother rerunning
+                    break;
+                } else {
+                    $toLookup = array_values($toLookup);
+                }
+            }
+            return $result;
+        }
+
+        public function compileDeclsToCode(array $decls): string
+        {
+            // TODO
+            $printer = new Printer\C;
+            return $printer->printNodes($decls, 0);
         }
 
         protected function compileConstructor(): string
@@ -130,11 +207,74 @@ namespace Core\Services\FFI {
     ';
         }
 
-        public function compileDeclsToCode(array $decls): string
+        public function compileCases(array $decls): array
         {
-            // TODO
-            $printer = new Printer\C;
-            return $printer->printNodes($decls, 0);
+            $results = [];
+            foreach ( $decls as $decl ) {
+                if ( $decl instanceof Decl\NamedDecl\ValueDecl\DeclaratorDecl\VarDecl ) {
+                    $return = $this->compileType($decl->type);
+                    if ( in_array($return, self::NATIVE_TYPES) ) {
+                        $results[] = "case " . var_export($decl->name, true) . ": return \$this->ffi->{$decl->name};";
+                    } else {
+                        $results[] = "case " . var_export($decl->name, true) . ": \$tmp = \$this->ffi->{$decl->name}; return \$tmp === null ? null : new $return(\$tmp);";
+                    }
+                }
+            }
+            return $results;
+        }
+
+        public function compileType(Type $type): string
+        {
+            if ( $type instanceof Type\TypedefType ) {
+                $name = $type->name;
+                restart:
+                if ( in_array($name, self::INT_TYPES) ) {
+                    return 'int';
+                }
+                if ( in_array($name, self::FLOAT_TYPES) ) {
+                    return 'float';
+                }
+                if ( isset($this->resolver[$name]) ) {
+                    $name = $this->resolver[$name];
+                    goto restart;
+                }
+                return $name;
+            } else if ( $type instanceof Type\BuiltinType && $type->name === 'void' ) {
+                return 'void';
+            } else if ( $type instanceof Type\BuiltinType && in_array($type->name, self::INT_TYPES) ) {
+                return 'int';
+            } else if ( $type instanceof Type\BuiltinType && in_array($type->name, self::FLOAT_TYPES) ) {
+                return 'float';
+            } else if ( $type instanceof Type\TagType\EnumType ) {
+                return 'int';
+            } else if ( $type instanceof Type\PointerType ) {
+                // special case
+                if ( $type->parent instanceof Type\BuiltinType && $type->parent->name === 'char' ) {
+                    // it's a string
+                    return 'string';
+                } else if ( $type->parent instanceof Type\AttributedType && $type->parent->parent instanceof Type\BuiltinType && $type->parent->parent->name === 'char' ) {
+                    // const char*
+                    return 'string';
+                }
+                return $this->compileType($type->parent) . '_ptr';
+            } else if ( $type instanceof Type\AttributedType ) {
+                if ( $type->kind === Type\AttributedType::KIND_CONST ) {
+                    // we can omit const from our compilation
+                    return $this->compileType($type->parent);
+                } else if ( $type->kind === Type\AttributedType::KIND_EXTERN ) {
+                    return $this->compileType($type->parent);
+                }
+            } else if ( $type instanceof Type\TagType\RecordType ) {
+                if ( $type->decl->name !== null ) {
+                    return $type->decl->name;
+                }
+            } else if ( $type instanceof Type\ArrayType\ConstantArrayType ) {
+                return 'array';
+            } else if ( $type instanceof Type\ArrayType\IncompleteArrayType ) {
+                return 'array';
+            }
+            var_dump($type);
+            throw new \LogicException('Not implemented how to handle type yet: ' . get_class($type));
         }
 
         public function compileDecl(Decl $declaration): array
@@ -200,6 +340,20 @@ namespace Core\Services\FFI {
                 $return[] = "    // typedefenum {$declaration->name}";
                 $declaration = $declaration->type->decl;
                 goto enum_decl;
+            }
+            return $return;
+        }
+
+        public function compileParameters(array $params): array
+        {
+            if ( empty($params) ) {
+                return [];
+            } else if ( $params[0] instanceof Type\BuiltinType && $params[0]->name === 'void' ) {
+                return [];
+            }
+            $return = [];
+            foreach ( $params as $idx => $param ) {
+                $return[] = $this->compileType($param);
             }
             return $return;
         }
@@ -276,131 +430,6 @@ namespace Core\Services\FFI {
             var_dump($expr);
         }
 
-        public function compileParameters(array $params): array
-        {
-            if ( empty($params) ) {
-                return [];
-            } else if ( $params[0] instanceof Type\BuiltinType && $params[0]->name === 'void' ) {
-                return [];
-            }
-            $return = [];
-            foreach ( $params as $idx => $param ) {
-                $return[] = $this->compileType($param);
-            }
-            return $return;
-        }
-
-        private const INT_TYPES = [
-            'bool',
-            'char',
-            'int',
-            'long',
-            'long long',
-            'long int',
-            'long long int',
-            'int8_t',
-            'uint8_t',
-            'int16_t',
-            'uint16_t',
-            'int32_t',
-            'uint32_t',
-            'int64_t',
-            'uint64_t',
-            'unsigned',
-            'unsigned char',
-            'unsigned int',
-            'unsigned long',
-            'unsigned long int',
-            'unsigned long long',
-            'unsigned long long int',
-            'size_t',
-        ];
-
-        private const FLOAT_TYPES = [
-            'float',
-            'double',
-            'long double',
-        ];
-
-        private const NATIVE_TYPES = [
-            'int',
-            'float',
-            'bool',
-            'string',
-            'array',
-        ];
-
-        public function compileType(Type $type): string
-        {
-            if ( $type instanceof Type\TypedefType ) {
-                $name = $type->name;
-                restart:
-                if ( in_array($name, self::INT_TYPES) ) {
-                    return 'int';
-                }
-                if ( in_array($name, self::FLOAT_TYPES) ) {
-                    return 'float';
-                }
-                if ( isset($this->resolver[$name]) ) {
-                    $name = $this->resolver[$name];
-                    goto restart;
-                }
-                return $name;
-            } else if ( $type instanceof Type\BuiltinType && $type->name === 'void' ) {
-                return 'void';
-            } else if ( $type instanceof Type\BuiltinType && in_array($type->name, self::INT_TYPES) ) {
-                return 'int';
-            } else if ( $type instanceof Type\BuiltinType && in_array($type->name, self::FLOAT_TYPES) ) {
-                return 'float';
-            } else if ( $type instanceof Type\TagType\EnumType ) {
-                return 'int';
-            } else if ( $type instanceof Type\PointerType ) {
-                // special case
-                if ( $type->parent instanceof Type\BuiltinType && $type->parent->name === 'char' ) {
-                    // it's a string
-                    return 'string';
-                } else if ( $type->parent instanceof Type\AttributedType && $type->parent->parent instanceof Type\BuiltinType && $type->parent->parent->name === 'char' ) {
-                    // const char*
-                    return 'string';
-                }
-                return $this->compileType($type->parent) . '_ptr';
-            } else if ( $type instanceof Type\AttributedType ) {
-                if ( $type->kind === Type\AttributedType::KIND_CONST ) {
-                    // we can omit const from our compilation
-                    return $this->compileType($type->parent);
-                } else if ( $type->kind === Type\AttributedType::KIND_EXTERN ) {
-                    return $this->compileType($type->parent);
-                }
-            } else if ( $type instanceof Type\TagType\RecordType ) {
-                if ( $type->decl->name !== null ) {
-                    return $type->decl->name;
-                }
-            } else if ( $type instanceof Type\ArrayType\ConstantArrayType ) {
-                return 'array';
-            } else if ( $type instanceof Type\ArrayType\IncompleteArrayType ) {
-                return 'array';
-            }
-            var_dump($type);
-            throw new \LogicException('Not implemented how to handle type yet: ' . get_class($type));
-        }
-
-        public function compileDeclClass(Decl $decl, string $className): array
-        {
-            $return = [];
-            if ( $decl instanceof Decl\NamedDecl\TypeDecl\TypedefNameDecl\TypedefDecl ) {
-                if ( $decl->type instanceof Type\TagType\EnumType ) {
-                    // don't compile enums
-                    return [];
-                }
-                $return = array_merge($return, $this->compileDeclClassImpl($decl->name, $decl->name, $className));
-                for ( $i = 1; $i <= 4; $i++ ) {
-                    $return = array_merge($return, $this->compileDeclClassImpl($decl->name . str_repeat('_ptr', $i), $decl->name . str_repeat('*', $i), $className));
-                }
-            }
-            return $return;
-        }
-
-
         protected function compileDeclClassImpl(string $name, string $ptrName, string $className): array
         {
             if ( isset($this->resolver[$name]) ) {
@@ -448,53 +477,20 @@ namespace Core\Services\FFI {
             return $return;
         }
 
-        protected function buildResolver(array $decls): array
+        public function compileDeclClass(Decl $decl, string $className): array
         {
-            $toLookup = [];
-            $result = [];
-            foreach ( $decls as $decl ) {
-                if ( $decl instanceof Decl\NamedDecl\TypeDecl\TypedefNameDecl\TypedefDecl ) {
-                    if ( $decl->type instanceof Type\TypedefType ) {
-                        $toLookup[] = [$decl->name, $decl->type->name];
-                    } else if ( $decl->type instanceof Type\BuiltinType ) {
-                        $result[$decl->name] = $decl->type->name;
-                    } else if ( $decl->type instanceof Type\TagType\EnumType ) {
-                        $result[$decl->name] = 'int';
-                    }
+            $return = [];
+            if ( $decl instanceof Decl\NamedDecl\TypeDecl\TypedefNameDecl\TypedefDecl ) {
+                if ( $decl->type instanceof Type\TagType\EnumType ) {
+                    // don't compile enums
+                    return [];
+                }
+                $return = array_merge($return, $this->compileDeclClassImpl($decl->name, $decl->name, $className));
+                for ( $i = 1; $i <= 4; $i++ ) {
+                    $return = array_merge($return, $this->compileDeclClassImpl($decl->name . str_repeat('_ptr', $i), $decl->name . str_repeat('*', $i), $className));
                 }
             }
-            /**
-             * This resolves chained typedefs. For example:
-             * typedef int A;
-             * typedef A B;
-             * typedef B C;
-             *
-             * This will resolve C=>int, B=>int, A=>int
-             *
-             * It runs a maximum of 50 times (to prevent things that shouldn't be possible, like circular references)
-             */
-            $runs = 50;
-            while ( $runs-- > 0 && ! empty($toLookup) ) {
-                $toRemove = [];
-                for ( $i = 0, $n = count($toLookup); $i < $n; $i++ ) {
-                    [$name, $ref] = $toLookup[$i];
-
-                    if ( isset($result[$ref]) ) {
-                        $result[$name] = $result[$ref];
-                        $toRemove[] = $i;
-                    }
-                }
-                foreach ( $toRemove as $index ) {
-                    unset($toLookup[$index]);
-                }
-                if ( empty($toRemove) ) {
-                    // We removed nothing, so don't bother rerunning
-                    break;
-                } else {
-                    $toLookup = array_values($toLookup);
-                }
-            }
-            return $result;
+            return $return;
         }
 
     }

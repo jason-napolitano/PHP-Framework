@@ -54,9 +54,12 @@ if ( ! function_exists('logger') ) {
      * Calls the logger service, making application logging extremely simple to
      * utilize
      *
+     * Example Usage:
+     * logger('Application event has been logged!', 'info')
+     *
      * @see Services::logger()
      *
-     * @param  string $message
+     * @param string  $message
      * @param ?string $type Options: [info|warning|debug|notice|error]
      * @param ?string $channel
      *
@@ -72,7 +75,7 @@ if ( ! function_exists('logger') ) {
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('cart') ) {
     /**
-     * ShoppingCart library function
+     * Shopping cart library function
      *
      * @see Services::cart()
      *
@@ -429,7 +432,7 @@ if ( ! function_exists('strip_namespace') ) {
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
-if ( ! function_exists('get_namespace')) {
+if ( ! function_exists('get_namespace') ) {
     /**
      * Returns only a classes namespace name
      *
@@ -448,7 +451,7 @@ if ( ! function_exists('get_namespace')) {
 
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
-if ( ! function_exists('namespace_exists')) {
+if ( ! function_exists('namespace_exists') ) {
     /**
      * Does a namespace exist?
      *
@@ -566,9 +569,9 @@ if ( ! function_exists('reduce_multiples') ) {
      *
      * Fred, Bill, Joe, Jimmy
      *
-     * @param string
-     * @param string    the character you wish to reduce
-     * @param bool    TRUE/FALSE - whether to trim the character from the beginning/end
+     * @param string The string to perform the reduce on
+     * @param string The character you wish to reduce
+     * @param bool   Whether to trim the character from the beginning/end
      *
      * @return    string
      */

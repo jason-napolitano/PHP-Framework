@@ -20,6 +20,33 @@ namespace App\Config {
          * @var string $defaultNamespace
          */
         public static string $defaultNamespace = 'App\Controllers';
+        /**
+         * Router instance
+         *
+         * @var BaseRouter $router
+         */
+        public BaseRouter $router;
+
+        // --------------------------------------------------------------------
+        // SYSTEM ROUTER CONFIG - DO NOT MODIFY
+
+        /**
+         * Let's build this router and route the application
+         */
+        public function __construct()
+        {
+            // Route the application ...
+            $this->router = new BaseRouter();
+
+            // Set the default namespace ...
+            $this->router->setNamespace(static::$defaultNamespace);
+
+            // Generate the routes ...
+            $this->generate();
+
+            // Let's get things going!
+            $this->router->run();
+        }
 
         /**
          * Route the application
@@ -40,34 +67,6 @@ namespace App\Config {
             // With params
             $this->router->get('/(\\w+)', 'DemoController@oneArgument');
             $this->router->get('/(\\w+)/(\\w+)', 'DemoController@twoArguments');
-        }
-
-        // --------------------------------------------------------------------
-        // SYSTEM ROUTER CONFIG - DO NOT MODIFY
-
-        /**
-         * Router instance
-         *
-         * @var BaseRouter $router
-         */
-        public BaseRouter $router;
-
-        /**
-         * Let's build this router and route the application
-         */
-        public function __construct()
-        {
-            // Route the application ...
-            $this->router = new BaseRouter();
-
-            // Set the default namespace ...
-            $this->router->setNamespace(static::$defaultNamespace);
-
-            // Generate the routes ...
-            $this->generate();
-
-            // Let's get things going!
-            $this->router->run();
         }
     }
 }
