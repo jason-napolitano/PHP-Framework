@@ -50,6 +50,8 @@ namespace App\Config {
 
         /**
          * Let's build this router and route the application
+         *
+         * @throws \ReflectionException
          */
         public function __construct()
         {

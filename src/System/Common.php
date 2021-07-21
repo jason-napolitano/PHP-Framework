@@ -1063,3 +1063,117 @@ if ( ! function_exists('function_name') ) {
         // ...
     }
 }
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if (! function_exists('array_deep_search')) {
+    /**
+     * Returns the value of an element at a key in an array of uncertain depth.
+     *
+     * @param mixed $key
+     * @param array $array
+     *
+     * @return mixed
+     */
+    function array_deep_search(string $key, array $array): mixed
+    {
+        if (isset($array[$key])) {
+            return $array[$key];
+        }
+
+        foreach ($array as $value) {
+            if (is_array($value) && ($result = array_deep_search($key, $value))) {
+                return $result;
+            }
+        }
+
+        return null;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if (! function_exists('_array_search_dot')) {
+    /**
+     * Used by `dot_array_search` to recursively search the
+     * array with wildcards.
+     *
+     * @internal This should not be used on its own.
+     *
+     * @param array $indexes
+     * @param array $array
+     *
+     * @return mixed
+     */
+    function _array_search_dot(array $indexes, array $array): mixed
+    {
+        // Grab the current index
+        $currentIndex = $indexes ? array_shift($indexes) : null;
+
+        if ((empty($currentIndex) && (int) $currentIndex !== 0) || (! isset($array[$currentIndex]) && $currentIndex !== '*')) {
+            return null;
+        }
+
+        // Handle Wildcard (*)
+        if ($currentIndex === '*') {
+            $answer = [];
+
+            foreach ($array as $value) {
+                $answer[] = _array_search_dot($indexes, $value);
+            }
+
+            $answer = array_filter($answer, static function ($value) {
+                return $value !== null;
+            });
+
+            if ($answer !== []) {
+                if (count($answer) === 1) {
+                    // If array only has one element, we return that element for BC.
+                    return current($answer);
+                }
+
+                return $answer;
+            }
+
+            return null;
+        }
+
+        // If this is the last index, make sure to return it now,
+        // and not try to recurse through things.
+        if (empty($indexes)) {
+            return $array[$currentIndex];
+        }
+
+        // Do we need to recursively search this value?
+        if (is_array($array[$currentIndex]) && $array[$currentIndex] !== []) {
+            return _array_search_dot($indexes, $array[$currentIndex]);
+        }
+
+        // Otherwise we've found our match!
+        return $array[$currentIndex];
+    }
+}
+
+// ----------------------------------------------------------------------------
+// If the function doesn't exist, let's create it!
+if (! function_exists('dot_array_search')) {
+    /**
+     * Searches an array through dot syntax. Supports
+     * wildcard searches, like foo.*.bar
+     *
+     * @param string $index
+     * @param array  $array
+     *
+     * @return mixed
+     */
+    function dot_array_search(string $index, array $array): mixed
+    {
+        $segments = preg_split('/(?<!\\\)\./', rtrim($index, '* '), 0, PREG_SPLIT_NO_EMPTY);
+
+        $segments = array_map(static function ($key) {
+            return str_replace('\.', '.', $key);
+        }, $segments);
+
+        return _array_search_dot($segments, $array);
+    }
+}

@@ -224,7 +224,7 @@ namespace Core\Services\Router {
             }
 
             // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
-            if ( $_SERVER['REQUEST_METHOD'] == 'HEAD' ) {
+            if ( $_SERVER['REQUEST_METHOD'] === 'HEAD' ) {
                 ob_end_clean();
             }
 
@@ -244,11 +244,11 @@ namespace Core\Services\Router {
 
             // If it's a HEAD request override it to being GET and prevent any output, as per HTTP Specification
             // @url http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4
-            if ( $_SERVER['REQUEST_METHOD'] == 'HEAD' ) {
+            if ( $_SERVER['REQUEST_METHOD'] === 'HEAD' ) {
                 ob_start();
                 $method = 'GET';
             } // If it's a POST request, check for a method override header
-            else if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
+            else if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
                 $headers = $this->getRequestHeaders();
                 if ( isset($headers['X-HTTP-Method-Override']) && in_array($headers['X-HTTP-Method-Override'], ['PUT', 'DELETE', 'PATCH']) ) {
                     $method = $headers['X-HTTP-Method-Override'];
@@ -279,7 +279,7 @@ namespace Core\Services\Router {
 
             // Method getallheaders() not available or went wrong: manually extract 'm
             foreach ( $_SERVER as $name => $value ) {
-                if ( (substr($name, 0, 5) == 'HTTP_') || ($name == 'CONTENT_TYPE') || ($name == 'CONTENT_LENGTH') ) {
+                if ( (substr($name, 0, 5) === 'HTTP_') || ($name === 'CONTENT_TYPE') || ($name === 'CONTENT_LENGTH') ) {
                     $headers[str_replace([' ', 'Http'], ['-', 'HTTP'], ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
                 }
             }
@@ -353,7 +353,7 @@ namespace Core\Services\Router {
             $uri = substr(rawurldecode($_SERVER['REQUEST_URI']), strlen($this->getBasePath()));
 
             // Don't take query params into account on the URL
-            if ( strstr($uri, '?') ) {
+            if ( str_contains($uri, '?') ) {
                 $uri = substr($uri, 0, strpos($uri, '?'));
             }
 
@@ -404,7 +404,7 @@ namespace Core\Services\Router {
                             call_user_func_array([$controller, $method], $params);
                         }
                     }
-                } catch ( \ReflectionException $reflectionException ) {
+                } catch ( \ReflectionException ) {
                     // The controller class is not available or the class does not have the method $method
                 }
             }
@@ -424,6 +424,8 @@ namespace Core\Services\Router {
          * Set a Default Namespace for Callable methods.
          *
          * @param string $namespace A given namespace
+         *
+         * @throws \ReflectionException
          */
         public function setNamespace(string $namespace): void
         {
@@ -459,7 +461,7 @@ namespace Core\Services\Router {
         }
 
         /**
-         * Explicilty sets the server base path. To be used when your entry script path differs from your entry URLs.
+         * Explicitly sets the server base path. To be used when your entry script path differs from your entry URLs.
          *
          * @see https://github.com/bramus/router/issues/82#issuecomment-466956078
          *
