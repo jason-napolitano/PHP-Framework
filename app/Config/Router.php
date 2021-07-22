@@ -34,9 +34,6 @@ namespace App\Config {
          */
         public function generate(): void
         {
-            // Default 404 handler ...
-            $this->router->set404(fn() => \Core\System\ErrorController::notFound());
-
             // Without params
             $this->router->get('/', 'DemoController@index');
 
@@ -60,6 +57,9 @@ namespace App\Config {
 
             // Set the default namespace ...
             $this->router->setNamespace(static::$defaultNamespace);
+
+            // Default 404 handler ...
+            $this->router->set404(fn() => \Core\System\ErrorController::notFound());
 
             // Generate the routes ...
             $this->generate();

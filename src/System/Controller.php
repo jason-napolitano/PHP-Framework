@@ -17,13 +17,5 @@ namespace Core\System {
     {
         // Response trait
         use ResponseTrait;
-
-        /**
-         * @param string $model
-         */
-        public function __construct(protected string $model)
-        {
-            $this->model = new $model();
-        }
     }
 }
