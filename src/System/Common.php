@@ -43,6 +43,54 @@ if ( ! function_exists('base_url') ) {
     }
 }
 
+if ( ! function_exists('config')) {
+    /**
+     * Returns a value from a config file. By default it'll look for a property in the
+     * App\Config\App file. If you'd like to use another Config class, simply pass its
+     * string value into the second parameter.
+     *
+     * Example using default config file at App\Config\App:
+     * echo config('baseUrl'); // http://localhost:8080
+     *
+     * Example using another, separate config file:
+     * echo config('customProperty', \Custom\Namespace\Config::class); // custom_property_value
+     *
+     * @param string $value  The config name of the config class property to return
+     * @param string $config The config FQCN [If different from \App\Config\App]
+     *
+     * @return mixed
+     */
+    function config(string $value, string $config = App::class): mixed
+    {
+        return (new $config())::$$value;
+    }
+}
+
+if ( ! function_exists('cfg')) {
+    /**
+     * A shorthand function for config()
+     *
+     * Returns a value from a config file. By default it'll look for a property in the
+     * App\Config\App file. If you'd like to use another Config class, simply pass its
+     * string value into the second parameter.
+     *
+     * Example using default config file at App\Config\App:
+     * echo config('baseUrl'); // http://localhost:8080
+     *
+     * Example using another, separate config file:
+     * echo config('customProperty', \Custom\Namespace\Config::class); // custom_property_value
+     *
+     * @param string $value  The config name of the config class property to return
+     * @param string $config The config FQCN [If different from \App\Config\App]
+     *
+     * @return mixed
+     */
+    function cfg(string $value, string $config = App::class): mixed
+    {
+        return config($value, $config);
+    }
+}
+
 // ----------------------------------------------------------------------------
 // If the function doesn't exist, let's create it!
 if ( ! function_exists('get_ip') ) {
