@@ -19,6 +19,6 @@ namespace App\Config {
          *
          * @var string $baseUrl
          */
-        public static string $baseUrl = 'http://localhost:8080';
+        public static string $baseUrl = 'http://localhost:8888';
     }
 }
